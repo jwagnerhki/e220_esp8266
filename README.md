@@ -17,6 +17,8 @@ The IR phototransistor BPW96C needs its emitter pin (round side) tied to GND. Th
 
 The Arduino sketch is under ./d0mqtt/
 
+From the code Library need: ESP8266WiFi, SoftwareSerial, PubSubClient, WiFiUdp, ESP8266WebServer.
+
 Before uploading the sketch, adjust the hard coded entries for MQTT (*MQTT_HOST*, *MQTT_PORT*) and Wifi (*ssid*, *pass*). Possibly also *SML_UDP_DEST_PORT* (default 3220). Can also adjust the tariff price  *PRICE_CENT_PER_KWH* and *TARIFF_START_SINCE_KWH*.
 
 ## MQTT
