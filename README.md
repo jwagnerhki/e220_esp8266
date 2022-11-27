@@ -33,7 +33,7 @@ The ESP sends topics 'e220/P_W' and 'e220/E_Wh'. Example trace:
 To get MQTT data via Telegraf into InfluxDB (and then e.g. Grafana), there is an  example config under *./telegraf-conf/*
 
 ## Web page
-The ESP also serves a very simple status page. It refreshes every 5 seconds. Example page: ![example of status page]([http://url/to/img.png](https://raw.githubusercontent.com/jwagnerhki/e220_esp8266/main/images/sample_page.png))
+The ESP also serves a very simple status page. It refreshes every 5 seconds. Example page: ![example of status page](https://raw.githubusercontent.com/jwagnerhki/e220_esp8266/main/images/sample_page.png)
 
 ## Serial
 SoftwareSerial is used for optical serial reception (pin D1) since ESP8266 has only one hardware serial port and that is already occupied by the Arduino USB-Serial program upload and serial monitor interface.
