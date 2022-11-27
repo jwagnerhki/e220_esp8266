@@ -46,8 +46,27 @@ e220/E_Wh 71611.5
 ```
 To get MQTT data via Telegraf into InfluxDB (and then e.g. Grafana), there is an  example config under *./telegraf-conf/*
 
+The example [Grafana JSON file](https://github.com/jwagnerhki/e220_esp8266/blob/main/grafana-conf/grafana-e220-example.json) under *./grafana-conf/* provides a very simple dashboard like:
+![Grafana sample page](https://raw.githubusercontent.com/jwagnerhki/e220_esp8266/main/images/grafana_sample.png)
+
 ## UDP
 A copy of SML frame payload is sent as an UDP packet to the MQTT host but a different port than the MQTT port. The UDP can be captured (e.g., ./debugCapture/pyUDPrx.py) and decoded through *libsml* (e.g., ./debugCapture/decodeE220sml.c).
+
+Example:
+```
+pi@raspberrypi:~/e220_esp8266 $ sudo aptitude install libsml-dev libsml1
+pi@raspberrypi:~/e220_esp8266 $ make capture
+From ('192.168.0.179', 53047) received 226 bytes : 76050083cb0962006200...
+SML file (3 SML messages, 227 bytes)
+SML message  101
+SML message  701
+SML message  201
+OBIS data
+1-0:96.50.1*1#LGZ#
+1-0:96.1.0*255#0a 01 xx xx xx xx xx xx xx xx #
+1-0:1.8.0*255#237431.6#Wh
+1-0:16.7.0*255#108#W
+```
 
 ## Web page
 The ESP also serves a very simple status page. It refreshes every 5 seconds. Example page: ![example of status page](https://raw.githubusercontent.com/jwagnerhki/e220_esp8266/main/images/sample_page.png)
