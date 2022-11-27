@@ -13,7 +13,7 @@ Once extended info is enabled, the E220 screen continually displays the live pow
 ## Board
 The IR phototransistor BPW96C needs its emitter pin (round side) tied to GND. The collector pin (flattened side) to ESP8266 board pin D1. The same D1 pin needs a 20..680 ohm resistor for pull-up to Vcc/3.3V. 
 
-![Wemos D1 board pin D1, GND, Vcc]([https://raw.githubusercontent.com/jwagnerhki/e220_esp8266/main/images/sample_page.png](https://raw.githubusercontent.com/jwagnerhki/e220_esp8266/main/images/wemos-D1.jpg))
+![Wemos D1 board pin D1, GND, Vcc](https://raw.githubusercontent.com/jwagnerhki/e220_esp8266/main/images/wemos-D1.jpg)
 
 ## Arduino config
 Need the Arduino IDE, adding ESP8266 into the board manager (c.f. [instructions](https://arduino-esp8266.readthedocs.io/en/latest/installing.html)). The board used here is the Wemos D1 Mini. Under the Arduino menu Tools, Board, it is called "Lolin(Wemos) D1 Mini (Clone)". Config is CPU 80 MHz and 4MB.
