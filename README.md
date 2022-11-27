@@ -10,7 +10,7 @@ Brute forcing the PIN is doable (not implemented here). The meter does not lock 
 
 Once extended info is enabled, the E220 screen continually displays the live power draw from / feed into the grid, and the infrared interface sends the same info as an SML formatted data frame. One frame per second.
 
-The optical interface is *unidirectional* serial with 9600,8,N,1 and probably adheres to DIN EN 62056-21 "D0" interface specs.
+The infrared interface is *unidirectional* serial with 9600,8,N,1 and probably adheres to DIN EN 62056-21 "D0" interface specs.
 
 The E220 is a very budget model with very limited set of metering fields. Out of the IEC 62056 [OBIS codes](https://www.promotic.eu/en/pmdoc/Subsystems/Comm/PmDrivers/IEC62056_OBIS.htm) it reports only two:
 
