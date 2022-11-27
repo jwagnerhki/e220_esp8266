@@ -30,7 +30,7 @@
 //      mode requires entry of a 4-digit PIN via the user menu of the E220.
 //
 //      The E220 PIN is available only from the utility or metering service company.
-//      Brute forcing is possible (not implemented here), ~10 sec/cycle * all 9999 = ~28 hours max
+//      Brute forcing is possible (not implemented here), ~20 sec/cycle * 10000 combinations = ~56 hours max
 //
 //      Once extended info is enabled, the E220 meter will periodically send out one SML message frame.
 //
