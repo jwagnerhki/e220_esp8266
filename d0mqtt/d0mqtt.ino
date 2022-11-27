@@ -77,10 +77,11 @@
 
 // #define DEBUG_SML_RX      // for debugging the SML de-framing function
 
+//#include "secret.h"
 #ifndef SECRET
 
     const char ssid[] = "<your wlan ssid>";
-    const char pass[] = "<our wlan passwd>";
+    const char pass[] = "<your wlan passwd>";
     const char MQTT_HOST[] = "<ip of mqtt host like 192.168.0.100>";
     const int  MQTT_PORT = 1883;
     const char MQTT_USER[] = ""; // blank = no credentials used
