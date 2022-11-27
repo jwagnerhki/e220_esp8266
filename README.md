@@ -10,6 +10,12 @@ Brute forcing the PIN is doable (not implemented here). The meter does not lock 
 
 Once extended info is enabled, the E220 screen continually displays the live power draw from / feed into the grid, and the infrared interface sends the same info as an SML formatted data frame. One frame per second.
 
+The optical interface is *unidirectional* serial with 9600,8,N,1 and probably adheres to DIN EN 62056-21 "D0" interface specs.
+
+The E220 is a very budget model with very limited set of metering fields. Out of the IEC 62056 [OBIS codes](https://www.promotic.eu/en/pmdoc/Subsystems/Comm/PmDrivers/IEC62056_OBIS.htm) it two: 1.8.0 = positive active energy, 16.7.0 sum active instantaneous power 'A+ - A-'.
+
+TODO: How to switch the meter between total since start, daily, hourly, 15min readings? Its default seems to be total since start.
+
 ## ESP8266 Board
 Example with SP-Cow ESP8266 Amazon B093G72SHN. The IR phototransistor BPW96C needs its emitter pin (round side) tied to GND. The collector pin (flattened side) to ESP8266 board pin D1. The same D1 pin needs a 20..680 ohm resistor for pull-up to Vcc/3.3V. 
 
