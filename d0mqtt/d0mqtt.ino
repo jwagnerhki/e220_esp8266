@@ -1,7 +1,7 @@
 //
 // Power meter D0 Interface readout of SML messages into UDP & MQTT
 //
-// ESP8266 Wemos D1 Mini - Lolin(Wemos) D1 Mini (Clone)
+// ESP8266 Wemos D1 Mini - Lolin(Wemos) D1 Mini (Clone), CPU 80 MHz, 4MB
 //  + 880nm IR phototransistor like BPW96C
 //  + wire GND to BPW96C emitter pin (round side of plastic)
 //  + wire from BPW96 collector pin (flattened side of plastic) to ESP8266 board Pin D1
@@ -335,6 +335,7 @@ void prettyPrintBIN(byte* buf, int buflen)
   Serial.println();
 }
 
+
 #ifdef HAVE_WEB
 void http_handleRoot()
 {
@@ -347,7 +348,7 @@ void http_handleRoot()
   #endif
 
   // Ver 2
-  String msg; // or msg[350], <html><head><meta http-equiv='refresh' content='5' /><style>div.mid { font-size: 10vw; height: 80vh; display: flex; align-items: center; justify-content: center }</style></head><title>E220 Power Meter</title><body><div class=mid><center>316 W&#x223f;<br><small>229.174 kWh</small></center></div></body></html>
+  String msg;
   static char tmp[15];
   msg += F("<html><head><meta http-equiv='refresh' content='5' />\n");
   msg += F("<style>div.mid { font-size: 10vw; height: 80vh; display: flex; align-items: center; justify-content: center }</style>");
@@ -371,8 +372,10 @@ void http_handleRoot()
 
 void setup() {
 
-  Serial.begin(115200); // USB debug comms for now
+  // USB Serial output of readings and possibly debug tracing
+  Serial.begin(115200);
 
+  // Phototransistor optical rx on pin D1
   d0.begin(9600, SWSERIAL_8N1, D1, -1, false, 512);
   d0.enableTx(false);
   d0.enableIntTx(false);
@@ -387,6 +390,7 @@ void setup() {
   httpServer.begin();
 #endif
 
+  // Onboard LED used as indicator of new received optical frame
   pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.print("Configured for MQTT at ");
