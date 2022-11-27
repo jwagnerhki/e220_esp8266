@@ -1,7 +1,7 @@
 
 # Readout of Landis Gyr E220 using ESP8266 - Webpage and MQTT
 
-A simple Arduino project for optical readout of Landis+Gyr E220 power meters. Requires an **ESP8266 board** such as the Wemos D1 Mini, an 880 nm infrared phototransistor like [**BPW96C**](https://www.vishay.com/docs/81532/bpw96.pdf), some wiring and some **20 to 680 ohm** resistor, and for example a **door ring magnet** ca. 33mm outer diameter with an 5mm (M5) inner hole through with to glue/epoxy the 5mm diameter phototransistor. 
+A simple Arduino project for optical readout of Landis+Gyr E220 power meters. Requires an **ESP8266 board** such as the Wemos D1 Mini, an ~880nm infrared phototransistor like [**BPW96C**](https://www.vishay.com/docs/81532/bpw96.pdf), some wiring and some **20 to 680 ohm** resistor, and for example a **door ring magnet** ca. 33mm outer diameter with an 5mm (M5) inner hole through with to glue/epoxy the 5mm diameter phototransistor. 
 
 ## E220 Power Meter Configuration
 The E220 meter must be switched once into Extended INFO mode via its user menu ([E220 user guide](https://www.landisgyr.de/webfoo/wp-content/uploads//2018/08/D000063497-E220-AMxD-Benutzerhandbuch-de-f.pdf]) section 5.4.1). This requires entry of a 4-digit PIN that has to be requested from the utility or metering service company.
