@@ -1,7 +1,7 @@
 
 # Readout of Landis Gyr E220 using ESP8266 - Webpage and MQTT
 
-A simple Arduino project for optical readout of Landis+Gyr E220 power meters. Requires an **ESP8266 board** such as the Wemos D1 Mini, an ~880nm infrared phototransistor like [**BPW96C**](https://www.vishay.com/docs/81532/bpw96.pdf), some wiring and some **20 to 680 ohm** resistor, and for example a **door ring magnet** ca. 33mm outer diameter with an 5mm (M5) inner hole through with to glue/epoxy the 5mm diameter phototransistor. 
+A simple Arduino project for optical readout of Landis+Gyr E220 power meters. Requires an **ESP8266 board** such as the Wemos D1 Mini or SP-Cow ESP8266, an ~880nm infrared phototransistor like [**BPW96C**](https://www.vishay.com/docs/81532/bpw96.pdf), some wiring and some **20 to 680 ohm** resistor, and for example a **door ring magnet** ca. 33mm outer diameter with an 5mm (M5) inner hole through with to glue/epoxy the 5mm diameter phototransistor. 
 
 ## E220 Power Meter Configuration
 The E220 meter must be switched once into Extended INFO mode via its user menu ([E220 user guide](https://www.landisgyr.de/webfoo/wp-content/uploads//2018/08/D000063497-E220-AMxD-Benutzerhandbuch-de-f.pdf]) section 5.4.1). This requires entry of a 4-digit PIN that has to be requested from the utility or metering service company.
@@ -11,7 +11,7 @@ Brute forcing the PIN is doable (not implemented here). The meter does not lock 
 Once extended info is enabled, the E220 screen continually displays the live power draw from / feed into the grid, and the infrared interface sends the same info as an SML formatted data frame. One frame per second.
 
 ## ESP8266 Board
-Example with Wemos D1 Mini. The IR phototransistor BPW96C needs its emitter pin (round side) tied to GND. The collector pin (flattened side) to ESP8266 board pin D1. The same D1 pin needs a 20..680 ohm resistor for pull-up to Vcc/3.3V. 
+Example with SP-Cow ESP8266 Amazon B093G72SHN. The IR phototransistor BPW96C needs its emitter pin (round side) tied to GND. The collector pin (flattened side) to ESP8266 board pin D1. The same D1 pin needs a 20..680 ohm resistor for pull-up to Vcc/3.3V. 
 
 ![Wemos D1 board pin D1, GND, Vcc](https://raw.githubusercontent.com/jwagnerhki/e220_esp8266/main/images/wemos-D1.jpg) ![Phototransistor with pull-up resistor and magnet](https://raw.githubusercontent.com/jwagnerhki/e220_esp8266/main/images/phototransistor-magnet.jpg)
 
