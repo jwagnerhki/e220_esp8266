@@ -29,12 +29,6 @@ int main(void)
 		if(nrd < 1) break;
 
 		transport_receiver(buf, SML_RAW_LEN);
-// weird:
-//   libsml: warning: could not read the whole file
-//   SML file (1 SML messages, 200 bytes)
-//   SML message  101
-// same also with  transport_receiver(buf, SML_RAW_LEN+2),  also -2
-
 	}
 
 	fclose(fin);
@@ -47,11 +41,10 @@ void transport_receiver(unsigned char *buffer, size_t buffer_len)
 	int i;
 	// github: the buffer contains the whole message, with transport escape sequences.
 	// these escape sequences are stripped here.
-	//sml_file *file = sml_file_parse(buffer + 8, buffer_len - 16);
-	// the sml file is parsed now
+	//   sml_file *file = sml_file_parse(buffer + 8, buffer_len - 16);
 	//
-	// adapted:
-	// buffer contains already de-framed message without escape seqs and without checksum
+	// adapted for captured ESP8266 UDP packets:
+	// the buffer contains already de-framed message without escape seqs and without checksum
 	sml_file *file = sml_file_parse(buffer, buffer_len);
 
 	// this prints some information about the file
