@@ -1,7 +1,7 @@
 
 # Readout of Landis Gyr E220 using ESP8266 - Webpage and MQTT
 
-A simple Arduino project for optical readout of Landis+Gyr E220 power meters. Requires an **ESP8266 board** such as the Wemos D1 Mini, an 880 nm infrared phototransistor like **BPW96C**, some wiring and a **680 ohm** resistor, and some **door ring magnet** ca. 33mm outer diameter with an 5mm (M5) inner hole through with to glue/epoxy the 5mm diameter phototransistor. 
+A simple Arduino project for optical readout of Landis+Gyr E220 power meters. Requires an **ESP8266 board** such as the Wemos D1 Mini, an 880 nm infrared phototransistor like **BPW96C**, some wiring and some **20 to 680 ohm** resistor, and for example a **door ring magnet** ca. 33mm outer diameter with an 5mm (M5) inner hole through with to glue/epoxy the 5mm diameter phototransistor. 
 
 ## E220 Power Meter Configuration
 The E220 meter must be switched once into Extended INFO mode via its user menu ([E220 user guide](https://www.landisgyr.de/webfoo/wp-content/uploads//2018/08/D000063497-E220-AMxD-Benutzerhandbuch-de-f.pdf]) section 5.4.1). This requires entry of a 4-digit PIN that has to be requested from the utility or metering service company.
@@ -24,19 +24,16 @@ Before uploading the sketch, adjust the hard coded entries for MQTT (*MQTT_HOST*
 ## MQTT
 The ESP sends topics 'e220/P_W' and 'e220/E_Wh'. Example trace:
 > pi@raspberrypi:~$ mosquitto_sub -t "e220/#" -v
-> e220/P_W 272
-> e220/E_Wh 71611.5
-> e220/P_W 231
-> e220/E_Wh 71611.5
-> ...
+> e220/P_W 272 
+> e220/E_Wh 71611.5 
+> e220/P_W 231 
+> e220/E_Wh 71611.5 
+> ... 
 
 To get MQTT data via Telegraf into InfluxDB (and then e.g. Grafana), there is an  example config under *./telegraf-conf/*
 
 ## Web page
-The ESP also serves a very simple status page. It refreshes every 5 seconds. Example:
-> 206 W∿  
-> 237.34 kWh  
-> €87.82
+The ESP also serves a very simple status page. It refreshes every 5 seconds. Example page: ![example of status page]([http://url/to/img.png](https://raw.githubusercontent.com/jwagnerhki/e220_esp8266/main/images/sample_page.png))
 
 ## Serial
 SoftwareSerial is used for optical serial reception (pin D1) since ESP8266 has only one hardware serial port and that is already occupied by the Arduino USB-Serial program upload and serial monitor interface.
