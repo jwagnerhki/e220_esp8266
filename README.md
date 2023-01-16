@@ -61,8 +61,9 @@ A copy of SML frame payload is sent as an UDP packet to the MQTT host but a diff
 
 Example:
 ```
-pi@raspberrypi:~/e220_esp8266 $ sudo aptitude install libsml-dev libsml1
-pi@raspberrypi:~/e220_esp8266 $ make capture
+pi@raspberrypi:~/e220_esp8266/debugCapture/ $ sudo aptitude install libsml-dev libsml1
+pi@raspberrypi:~/e220_esp8266/debugCapture/ $ make
+pi@raspberrypi:~/e220_esp8266/debugCapture/ $ make capture
 From ('192.168.0.179', 53047) received 226 bytes : 76050083cb0962006200...
 SML file (3 SML messages, 227 bytes)
 SML message  101
