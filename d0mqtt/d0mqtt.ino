@@ -6,9 +6,16 @@
 //  + wire GND to BPW96C emitter pin (round side of plastic)
 //  + wire from BPW96 collector pin (flattened side of plastic) to ESP8266 board Pin D1
 //  + 680 ohm pull-up from Pin D1 to 3.3V Vcc
+//  Effectively 'dark'=3.3V/HI, 'light'=~0.3V/LO
 //
 //  BPW96C datasheet: Ic~4.5 mA, Vce_sat~0.3V
 //   =>  R = (3.3-0.3)/4.5e-3 = ~670  => 680 ohm pull-up
+//
+// For IR repeater mode:
+//  SIR 204 EVL infrared LED, 875 nm, 30 deg, 3 mm, 1.3 V Ufwd
+//   => series R = (3.3V - 1.3V) / 10 mA ~= 2/0.010 ~= 220 ohm .. 330 ohm
+//   + SIR204 cathode (flattened side) via 330 ohm to Pin D2
+//   + SIR204 anode (round side of plastic) to 3.3V
 //
 // Landis Gyr E220 power meter
 //      Optical *unidirectional* serial 9600,8,N,1
@@ -41,7 +48,7 @@
 //      and it is occupied already with the Arduino firmware upload and serial monitor.
 //
 //      Arduino "Serial Monitor" can be opened for a debug dump of received optical data.
-//      Compile with 'HAVE_SERIAL_TRACE' defined further below.
+//      Compile with 'HAVE_SERIAL_TRACE' defined further below. USB Serial baud is 115200.
 //
 //  2. ESP8266 data output
 //
@@ -74,6 +81,7 @@
 
 // #define HAVE_SERIAL_TRACE // define to enable serial console dump of received optical SoftwareSerial data
 #define HAVE_WEB             // define to enable Wifi, UDP, MQTT and HTTP
+#define HAVE_IR_REPEATER_LED // define to repeat the received IR data on an output IR LED
 
 // #define DEBUG_SML_RX      // for debugging the SML de-framing function
 
@@ -132,6 +140,12 @@ static float current_Energy_Wh = 0;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*
+ * Blocking read of an SML frame from optical/serial
+ *
+ * Returns payload of the received frame, excluding the 8-byte start sequence '[1B][1B][1B][1B][1][1][1][1]',
+ * but *including* final padding, and trailing 8-byte sequence with CRC-16 '[1B][1B][1B][1B]|[1A][<padLen>][<crc[0:1]>]'.
+ */
 int readSMLFrame(SoftwareSerial* ss, byte* frame, unsigned int bufsize, unsigned int* noverflow = NULL)
 {
   // FPGA/VHDL-Style implementation of a SML de-framer
@@ -140,7 +154,7 @@ int readSMLFrame(SoftwareSerial* ss, byte* frame, unsigned int bufsize, unsigned
   enum {
     STATE_LOCK_BEGIN_SEQ = 0,  // scan for [1B][1B][1B][1B]
     STATE_LOCK_VER1_SEQ,       // scan for [1][1][1][1] right after [1B][1B][1B][1B]
-    STATE_READ_FRAME,          // read everything until (and including - but truncated!) reoccurrence of [1B][1B][1B][1B]
+    STATE_READ_FRAME,          // read everything until reoccurrence of [1B][1B][1B][1B]
     STATE_LOCK_END_SEQ,        // read 4 bytes 1A <xx> <yy> <zz> ; xx = nr fill bytes, yy zz = crc16/x25 checksum
     STATE_QUIT
   };
@@ -153,8 +167,6 @@ int readSMLFrame(SoftwareSerial* ss, byte* frame, unsigned int bufsize, unsigned
   unsigned int nrx_frame = 0;
   unsigned int nrx_after_state_change = 0;
   unsigned int noverflow_frame = 0;
-
-  byte smlEnd[4];
 
   while(state != STATE_QUIT) {
 
@@ -203,7 +215,7 @@ int readSMLFrame(SoftwareSerial* ss, byte* frame, unsigned int bufsize, unsigned
       case STATE_LOCK_BEGIN_SEQ:
 
         // scan for [1B][1B][1B][1B]
-        if (runlen_of_1B >= 4) {
+        if (runlen_of_1B == 4) {
           state = STATE_LOCK_VER1_SEQ;
         }
         break;
@@ -213,37 +225,33 @@ int readSMLFrame(SoftwareSerial* ss, byte* frame, unsigned int bufsize, unsigned
         // scan for [1][1][1][1] right after [1B][1B][1B][1B]
         if (runlen_of_01 != nrx_after_state_change) {
           state = STATE_LOCK_BEGIN_SEQ;
-        } else if (runlen_of_01 >= 4) {
+        } else if (runlen_of_01 == 4) {
           state = STATE_READ_FRAME;
         }
         break;
 
       case STATE_READ_FRAME:
-        // keep appending rx'ed data until [1B][1B][1B][1B]
-        if (runlen_of_1B == 4) {
-          nrx_frame -= 4;
-          state = STATE_LOCK_END_SEQ;
+        // keep appending rx'ed data until a full [1B][1B][1B][1B]
+        if (nrx_frame < bufsize) {
+          frame[nrx_frame] = ch;
+          ++nrx_frame;
         } else {
-          if (nrx_frame < bufsize) {
-            frame[nrx_frame] = ch;
-            ++nrx_frame;
-          } else {
-            ++noverflow_frame;
-          }
+          ++noverflow_frame;
+        }
+        if (runlen_of_1B == 4) {
+          state = STATE_LOCK_END_SEQ;
         }
         break;
 
       case STATE_LOCK_END_SEQ:
         // Get the last 4 bytes
-        smlEnd[nrx_after_state_change-1] = ch;
-        if (nrx_after_state_change >= 4) {
-          // TODO
-          //  check that     smlEnd[0] == 0x1A
-          //  padding count  smlEnd[1] <= 3
-          //  crc            smlEnd[2] smlEnd[3] should be inspected...
-          if (smlEnd[1] <= 3) {
-            nrx_frame -= smlEnd[1];
-          }
+        if (nrx_frame < bufsize) {
+          frame[nrx_frame] = ch;
+          ++nrx_frame;
+        } else {
+          ++noverflow_frame;
+        }
+        if (nrx_after_state_change == 4) {
           state = STATE_QUIT;
         }
         break;
@@ -321,7 +329,7 @@ void echoSwSerial(SoftwareSerial* ss)
 
 void prettyPrintBIN(byte* buf, int buflen)
 {
-  while(buflen > 1) {
+  while(buflen > 0) {
     if(isprint(*buf)) {
       Serial.print((char)*buf);
     } else {
@@ -339,15 +347,6 @@ void prettyPrintBIN(byte* buf, int buflen)
 #ifdef HAVE_WEB
 void http_handleRoot()
 {
-  // Ver 1
-  #if 0
-  static char msg[160];
-  snprintf(msg, sizeof(msg), "<html><title>E220 Power Meter</title><meta http-equiv='refresh' content='5'><body>Power: %d W<br>Energy: %.3f kWh</body></html>", current_Power_W, current_Energy_Wh/1000);
-  msg[sizeof(msg)-1] = '\0';
-  httpServer.send(200, "text/html", msg);
-  #endif
-
-  // Ver 2
   String msg;
   static char tmp[15];
   msg += F("<html><head><meta http-equiv='refresh' content='5' />\n");
@@ -376,8 +375,13 @@ void setup() {
   Serial.begin(115200);
 
   // Phototransistor optical rx on pin D1
-  d0.begin(9600, SWSERIAL_8N1, D1, -1, false, 512);
+#ifndef HAVE_IR_REPEATER_LED
+  d0.begin(9600, SWSERIAL_8N1, D1, -1, /*invert:*/false, 512);
   d0.enableTx(false);
+#else
+  d0.begin(9600, SWSERIAL_8N1, D1, D2, /*invert:*/false, 512);
+  d0.enableTx(true);
+#endif
   d0.enableIntTx(false);
 
 #ifdef HAVE_WEB
@@ -393,10 +397,21 @@ void setup() {
   // Onboard LED used as indicator of new received optical frame
   pinMode(LED_BUILTIN, OUTPUT);
 
-  Serial.print("Configured for MQTT at ");
+  Serial.print(F("Configured for MQTT at "));
   Serial.print(MQTT_HOST);
-  Serial.print(", and forwarding SML forward to MQTT host UDP port ");
+  Serial.print(F(", and forwarding SML forward to MQTT host UDP port "));
   Serial.println(SML_UDP_DEST_PORT);
+
+  Serial.println(F("Receiving data on Pin D1, incoming light=lo, dark=hi"));
+
+#ifdef HAVE_IR_REPEATER_LED
+  Serial.println(F("Repeating the data via IR LED in series with 330 ohm from Pin D2 to Vcc, hi=dark, lo=light"));
+#endif
+
+#ifdef HAVE_WEB
+  Serial.println(F("Serving HTTP page with power draw and total kWh consumed info"));
+#endif
+
 }
 
 void loop()
@@ -407,6 +422,19 @@ void loop()
 
   while(Serial.available()) {
     Serial.read();
+  }
+
+  if(WiFi.isConnected()) {
+      //Serial.print(F("Connected to "));
+      //Serial.println(ssid);
+  } else {
+      static long prev_tick = 0;
+      if (millis() - prev_tick > 1000) {
+        Serial.print(F("Trying to connect to "));
+        Serial.println(ssid);
+        prev_tick = millis();
+      }
+      //return;
   }
 
   mqttClient.loop();
@@ -423,9 +451,9 @@ void loop()
   }
 
   if (noverflow) {
-    Serial.print("Warning: data truncated, SML frame size ");
+    Serial.print(F("Warning: data truncated, SML frame size "));
     Serial.print(noverflow);
-    Serial.print(" bytes larger than hardcoded buffer size of ");
+    Serial.print(F(" bytes larger than hardcoded buffer size of "));
     Serial.println(sizeof(smlframe));
   }
 
@@ -434,7 +462,7 @@ void loop()
   current_Power_W = parseSMLFrame_E220_Power(smlframe, nrx);
   current_Energy_Wh = parseSMLFrame_E220_TotalEnergy(smlframe, nrx);
 
-#if HAVE_SERIAL_TRACE
+#ifdef HAVE_SERIAL_TRACE
   prettyPrintBIN(smlframe, nrx);
 #endif
 
@@ -457,14 +485,26 @@ void loop()
   }
 #endif
 
+#ifdef HAVE_IR_REPEATER_LED
+  for (int ntx = 0; ntx < 4; ntx++) {
+    d0.write(0x1B);
+  }
+  for (int ntx = 0; ntx < 4; ntx++) {
+    d0.write(0x01);
+  }
+  for (int ntx = 0; ntx < nrx; ntx++) {
+    d0.write(smlframe[ntx]);
+  }
+#endif
+
   digitalWrite(LED_BUILTIN, HIGH);
 
   Serial.print(current_Power_W);
-  Serial.print(" W, ");
+  Serial.print(F(" W, "));
   Serial.print(current_Energy_Wh/1000);
-  Serial.print(" kWh, ");
+  Serial.print(F(" kWh, "));
   Serial.print((PRICE_CENT_PER_KWH*(current_Energy_Wh-TARIFF_START_SINCE_KWH))/100000);
-  Serial.println(" EUR");
+  Serial.println(F(" EUR"));
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
